@@ -22,7 +22,7 @@ class BalanceController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'balance' => $this->formatMoney($user->getBalance()),
+            'balance' => $user->getBalance()->getAmountFormatted(),
         ]);
     }
 
@@ -42,17 +42,7 @@ class BalanceController extends Controller
 
         return response()->json([
             'message' => 'Successfully updated the balance.',
-            'balance' => $this->formatMoney($user->getBalance()),
+            'balance' => $user->getBalance()->getAmountFormatted(),
         ]);
-    }
-
-    private function formatMoney(MoneyInterface $money): string
-    {
-        return number_format(
-            round($money->getEuros() + $money->getCents() / 100, 2),
-            2,
-            '.',
-            ''
-        );
     }
 }

@@ -75,10 +75,12 @@ class CartService implements CartInterface
         $subTotal = new $this->money(0, 0);
         foreach ($this->user->productsInCart()->get() as $product) {
             /** @var Product $product */
+
             $subTotal->setEuros(
                 $subTotal->getEuros() +
                 $product->getPrice()->getEuros() * $product->count
             );
+
             $subTotal->setCents(
                 $subTotal->getCents() +
                 $product->getPrice()->getCents() * $product->count
@@ -95,15 +97,20 @@ class CartService implements CartInterface
             /** @var Product $product */
 
             $vat = round(
-                ($product->getPrice()->getEuros() + $product->getPrice()->getCents() / 100) * $product->getVatRate(),
+                (
+                    $product->getPrice()->getEuros() +
+                    $product->getPrice()->getCents() / 100
+                ) * $product->getVatRate(),
                 2
             );
             $vatEuros = floor($vat);
 
-            $vatTotal->setEuros($vatTotal->getEuros() +
-                $vatEuros * $product->count);
-            $vatTotal->setCents($vatTotal->getCents() +
-                round(($vat - $vatEuros) * 100 * $product->count));
+            $vatTotal->setEuros(
+                $vatTotal->getEuros() + $vatEuros * $product->count
+            );
+            $vatTotal->setCents(
+                $vatTotal->getCents() + round(($vat - $vatEuros) * 100 * $product->count)
+            );
         }
 
         return $this->moneyCentsToEuros($vatTotal);
@@ -116,7 +123,10 @@ class CartService implements CartInterface
             /** @var Product $product */
 
             $vat = round(
-                ($product->getPrice()->getEuros() + $product->getPrice()->getCents() / 100) * $product->getVatRate(),
+                (
+                    $product->getPrice()->getEuros() +
+                    $product->getPrice()->getCents() / 100
+                ) * $product->getVatRate(),
                 2
             );
             $vatEuros = floor($vat);

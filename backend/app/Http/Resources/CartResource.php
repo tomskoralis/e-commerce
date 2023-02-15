@@ -15,19 +15,9 @@ class CartResource extends JsonResource
         /** @var CartResource|CartService $this */
         return [
             'products' => ProductResource::collection($this->getProducts()),
-            'subtotal' => $this->formatMoney($this->getSubtotal()),
-            'vat' => $this->formatMoney($this->getVatAmount()),
-            'total' => $this->formatMoney($this->getTotal()),
+            'subtotal' => $this->getSubtotal()->getAmountFormatted(),
+            'vat' => $this->getVatAmount()->getAmountFormatted(),
+            'total' => $this->getTotal()->getAmountFormatted(),
         ];
-    }
-
-    private function formatMoney(MoneyInterface $money): string
-    {
-        return number_format(
-            round($money->getEuros() + $money->getCents() / 100, 2),
-            2,
-            '.',
-            ''
-        );
     }
 }

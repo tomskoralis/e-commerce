@@ -8,6 +8,7 @@ use App\Models\NonEloquent\MoneyInterface;
 use App\Models\ProductInterface;
 use App\Models\User;
 use App\Services\CartInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,8 +35,8 @@ class CartController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $productId = $request->get('id');
-        $product = $this->productModel::query()->find($productId);
+        $product = $this->productModel::query()
+            ->find($request->get('id'));
 
         if (!isset($product)) {
             return response()->json([
@@ -44,7 +45,14 @@ class CartController extends Controller
         }
 
         $cart = (new $this->cartService($request->user()));
-        $cart->addProduct($product);
+
+        try {
+            $cart->addProduct($product);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't add product.",
+            ], 400);
+        }
 
         return (new CartResource($cart))
             ->response()
@@ -53,8 +61,8 @@ class CartController extends Controller
 
     public function destroy(Request $request): JsonResponse|CartResource
     {
-        $productId = $request->get('id');
-        $product = $this->productModel::query()->find($productId);
+        $product = $this->productModel::query()
+            ->find($request->get('id'));
 
         if (!isset($product)) {
             return response()->json([
@@ -63,7 +71,14 @@ class CartController extends Controller
         }
 
         $cart = (new $this->cartService($request->user()));
-        $cart->removeProduct($product);
+
+        try {
+            $cart->removeProduct($product);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't remove product.",
+            ], 400);
+        }
 
         return new CartResource($cart);
     }
@@ -102,8 +117,13 @@ class CartController extends Controller
             }
         }
 
-        (new $this->cartService($user))
-            ->checkout();
+        try {
+            (new $this->cartService($user))->checkout();
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't checkout.",
+            ], 400);
+        }
 
         return response()->json([
             'message' => 'Successfully bought the items in the cart.'

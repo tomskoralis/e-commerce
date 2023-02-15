@@ -37,4 +37,14 @@ class Money implements MoneyInterface
         $this->euros = $euros;
         return $this;
     }
+
+    public function getAmountFormatted(): string
+    {
+        return number_format(
+            round($this->getEuros() + $this->getCents() / 100, 2),
+            2,
+            '.',
+            ''
+        );
+    }
 }

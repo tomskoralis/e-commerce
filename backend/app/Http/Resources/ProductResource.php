@@ -18,9 +18,9 @@ class ProductResource extends JsonResource
             'id' => $this->id,
             'name' => $this->getName(),
             'available' => $this->getAvailable(),
-            'price' => $this->formatMoney($this->getPrice()),
+            'price' => $this->getPrice()->getAmountFormatted(),
             'vat_rate' => rtrim(rtrim($this->getVatRate() * 100, '0'), '.'),
-            'vat' => $this->formatMoney($this->getVat()),
+            'vat' => $this->getVat()->getAmountFormatted(),
         ];
 
         $count = $this->count;
@@ -42,15 +42,5 @@ class ProductResource extends JsonResource
         $vatMoney->setEuros($vat);
         $vatMoney->setCents(round(($vat - $vatEuros) * 100));
         return $vatMoney;
-    }
-
-    private function formatMoney(MoneyInterface $money): string
-    {
-        return number_format(
-            round($money->getEuros() + $money->getCents() / 100, 2),
-            2,
-            '.',
-            ''
-        );
     }
 }

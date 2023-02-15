@@ -26,15 +26,22 @@ class ProductController extends Controller
         $this->stockService = new $stockService();
     }
 
-    public function index(): AnonymousResourceCollection
+    public function index(): JsonResponse|AnonymousResourceCollection
     {
-        $products = ProductResource::collection(
-            $this->stockService
+        try {
+            $products = $this->stockService
                 ->getProducts()
-                ->paginate(self::PRODUCTS_PER_PAGE)
-        );
-        $products::wrap('products');
-        return $products;
+                ->paginate(self::PRODUCTS_PER_PAGE);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't get the products.",
+            ], 400);
+        }
+
+        $productCollection = ProductResource::collection($products);
+        $productCollection::wrap('products');
+
+        return $productCollection;
     }
 
     public function show(string $product): JsonResponse|ProductResource
@@ -62,13 +69,13 @@ class ProductController extends Controller
         $price = $request->get('price');
         $priceEuros = floor($price);
 
-        $product = (new $this->productModel())->fill([
+        $product = (new $this->productModel([
             'name' => $request->get('name'),
             'available' => $request->get('available'),
             'price_euros' => $priceEuros,
             'price_cents' => round(($price - $priceEuros) * 100),
             'vat_rate' => $request->get('vat_rate'),
-        ]);
+        ]));
 
         try {
             $this->stockService->addProduct($product);
