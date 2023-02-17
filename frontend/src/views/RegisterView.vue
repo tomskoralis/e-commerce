@@ -1,10 +1,6 @@
 <template>
   <h1 class="page-heading">Register</h1>
 
-  <p v-if="state.errorMessage" class="error-message">
-    {{ state.errorMessage }}
-  </p>
-
   <form @submit.prevent="handleSubmit" class="form">
     <TextInput
       id="name"
@@ -79,7 +75,6 @@ const state = reactive({
     value: "",
     error: "",
   },
-  errorMessage: "",
 });
 
 const isNameValid = (): Boolean => {
@@ -149,7 +144,6 @@ const register = async () => {
     await router.push("/");
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      state.errorMessage = error.response?.data.message;
       const err = error.response?.data?.errors;
       state.name.error = err.name?.[0];
       state.email.error = err.email?.[0];

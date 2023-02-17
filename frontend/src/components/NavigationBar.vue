@@ -5,13 +5,13 @@
         <nav v-show="visible || width > 767" class="navigation-links">
           <RouterLink class="link" to="/">Home</RouterLink>
           <RouterLink class="link" to="/products">Products</RouterLink>
-          <RouterLink class="link" to="/products/new">New Product</RouterLink>
           <RouterLink class="link" to="/unavailable">Out of stock</RouterLink>
+          <RouterLink class="link" to="/products/new">New Product</RouterLink>
         </nav>
         <nav v-show="visible || width > 767" class="auth-navigation-links">
-          <RouterLink class="link" to="/cart"
-            >Cart{{ productCountInCart() }}</RouterLink
-          >
+          <RouterLink class="link" to="/cart">
+            Cart{{ productCountInCart() }}
+          </RouterLink>
           <RouterLink class="link" to="/account">Account</RouterLink>
           <button class="link" @click="logout">Logout</button>
         </nav>
@@ -42,7 +42,7 @@ import Hamburger from "@/components/icons/HamburgerIcon.vue";
 const store = inject("store") as Store;
 const router = useRouter();
 const url = "http://127.0.0.1:8000/api/v1/logout";
-const width = ref(document.documentElement.clientWidth);
+const width = ref(window.innerWidth);
 const visible = ref(false);
 
 const toggleNavigationExpand = () => {
@@ -54,7 +54,8 @@ onMounted(() => {
 });
 
 const windowResize = () => {
-  width.value = document.documentElement.clientWidth;
+  width.value = window.innerWidth;
+  console.log(width.value);
 };
 
 const logout = async () => {
