@@ -11,6 +11,7 @@ use App\Services\CartInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CartController extends Controller
 {
@@ -26,11 +27,16 @@ class CartController extends Controller
         $this->cartService = $cartService;
     }
 
-    public function index(Request $request): CartResource
+    public function index(Request $request): JsonResponse|CartResource
     {
-        return new CartResource(
-            new $this->cartService($request->user())
-        );
+        try {
+            $carts = new $this->cartService($request->user());
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't get the cart.",
+            ], 400);
+        }
+        return new CartResource($carts);
     }
 
     public function store(Request $request): JsonResponse
@@ -128,6 +134,21 @@ class CartController extends Controller
         return response()->json([
             'message' => 'Successfully bought the items in the cart.'
         ]);
+    }
+
+    public function indexOrders(Request $request): JsonResponse|AnonymousResourceCollection
+    {
+        try {
+            $carts = new $this->cartService($request->user());
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't get the orders.",
+            ], 400);
+        }
+
+        $orders = ProductResource::collection($carts->getOrders());
+        $orders::wrap('orders');
+        return $orders;
     }
 
     private function moneyToFloat(MoneyInterface $money): float

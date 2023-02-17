@@ -20,4 +20,8 @@ interface CartInterface
     public function getVatAmount(): MoneyInterface;
 
     public function getTotal(): MoneyInterface;
+
+    public function checkout(): self;
+
+    public function getOrders(): Collection;
 }

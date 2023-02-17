@@ -29,7 +29,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token');
 
         return response()->json([
-            'message' => 'Successfully registered.',
+            'message' => "Successfully registered as $user->name.",
             'token' => $token->plainTextToken
         ], 201);
     }
@@ -41,6 +41,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        /** @var User $user */
         $user = User::query()->where('email', $request->get('email'))->first();
 
         if (!isset($user) || !Hash::check(request()->password, $user->password)) {
@@ -52,7 +53,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token');
 
         return response()->json([
-            'message' => 'Successfully logged in.',
+            'message' => "Successfully logged in as $user->name.",
             'token' => $token->plainTextToken
         ]);
     }

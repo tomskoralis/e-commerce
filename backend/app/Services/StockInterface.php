@@ -12,4 +12,6 @@ interface StockInterface
     public function removeProduct(ProductInterface $product): self;
 
     public function getProducts(): Builder;
+
+    public function getOutOfStock(): Builder;
 }

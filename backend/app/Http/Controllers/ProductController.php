@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -60,8 +61,8 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'name' => ['required', 'unique:' . Product::class],
-            'available' => ['required', 'numeric', 'min:1'],
+            'name' => ['required', 'string', 'unique:' . Product::class],
+            'available' => ['required', 'numeric', 'integer', 'min:1'],
             'price' => ['required', 'numeric', 'min:0.01', 'regex:/^\d*(?:\.\d{1,2})?$/'],
             'vat_rate' => ['required', 'numeric', 'min:0', 'max:99.99', 'regex:/^\d*(?:\.\d{1,2})?$/'],
         ]);
@@ -93,8 +94,8 @@ class ProductController extends Controller
     public function update(Request $request, string $product): JsonResponse|ProductResource
     {
         $request->validate([
-            'name' => ['required', 'unique:' . Product::class],
-            'available' => ['required', 'numeric', 'min:1'],
+            'name' => ['required', 'string', Rule::unique(Product::class)->ignore($product)],
+            'available' => ['required', 'numeric', 'integer', 'min:0'],
             'price' => ['required', 'numeric', 'min:0.01', 'regex:/^\d*(?:\.\d{1,2})?$/'],
             'vat_rate' => ['required', 'numeric', 'min:0', 'max:99.99', 'regex:/^\d*(?:\.\d{1,2})?$/'],
         ]);
@@ -148,12 +149,21 @@ class ProductController extends Controller
         return response()->json([], 204);
     }
 
-    public function getOutOfStock(ProductInterface $productModel): AnonymousResourceCollection
+
+    public function getOutOfStock(): JsonResponse|AnonymousResourceCollection
     {
-        $products = ProductResource::collection(
-            $productModel::query()->where('available', '=', 0)->get(),
-        );
-        $products::wrap('products');
-        return $products;
+        try {
+            $products = $this->stockService->getOutOfStock()
+                ->paginate(self::PRODUCTS_PER_PAGE);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => "Couldn't get the products.",
+            ], 400);
+        }
+
+        $productCollection = ProductResource::collection($products);
+        $productCollection::wrap('products');
+
+        return $productCollection;
     }
 }

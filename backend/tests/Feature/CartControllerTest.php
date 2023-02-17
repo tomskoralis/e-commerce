@@ -5,12 +5,19 @@ namespace Tests\Feature;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CartControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow('2023-1-1 00:00:00');
+    }
 
     public function testUnauthenticatedCannotSeeCart(): void
     {
@@ -32,7 +39,7 @@ class CartControllerTest extends TestCase
 
         $product = Product::factory()->create();
 
-        $cart = (new Cart())->fill([
+        $cart = new Cart([
             'count' => 1,
         ]);
         $cart->user()->associate($user);
@@ -196,7 +203,7 @@ class CartControllerTest extends TestCase
 
         $product = Product::factory()->create();
 
-        $cart = (new Cart())->fill([
+        $cart = new Cart([
             'count' => 1,
         ]);
         $cart->user()->associate($user);
@@ -231,7 +238,7 @@ class CartControllerTest extends TestCase
             'user_id' => $user->id,
             'product_id' => $product->id,
             'count' => 1,
-            'status' => null,
+            'bought_at' => null,
         ]);
     }
 
@@ -263,7 +270,7 @@ class CartControllerTest extends TestCase
             'vat_rate' => 21,
         ]);
 
-        $cart = (new Cart())->fill([
+        $cart = new Cart([
             'count' => 1,
         ]);
         $cart->user()->associate($user);
@@ -296,13 +303,58 @@ class CartControllerTest extends TestCase
             'user_id' => $user->id,
             'product_id' => $product->id,
             'count' => 1,
-            'status' => 'bought'
+            'bought_at' => now(),
         ]);
 
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
             'name' => $product->name,
             'available' => 0,
+        ]);
+    }
+
+    public function testIndexOrders(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create();
+
+        $cart = new Cart([
+            'count' => 1,
+            'bought_at' => now(),
+        ]);
+        $cart->user()->associate($user);
+        $cart->product()->associate($product);
+        $cart->save();
+
+        $response = $this->get('/api/v1/orders', [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertExactJson([
+            'orders' => [
+                [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'available' => $product->available,
+                    'price' => number_format(
+                        round($product->price_euros + $product->price_cents / 100, 2),
+                        2,
+                        '.',
+                        ''
+                    ),
+                    'vat_rate' => rtrim(rtrim($product->vat_rate, '0'), '.'),
+                    'vat' => number_format(
+                        round(($product->price_euros + $product->price_cents / 100) * $product->vat_rate / 100, 2),
+                        2,
+                        '.',
+                        ''
+                    ),
+                    'count' => 1,
+                    'bought_at' => now()->format('d/m/Y G:i'),
+                ],
+            ]
         ]);
     }
 }

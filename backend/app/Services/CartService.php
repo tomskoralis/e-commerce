@@ -26,7 +26,7 @@ class CartService implements CartInterface
         $cart = Cart::query()->where([
             'user_id' => $this->user->id,
             'product_id' => $product->id,
-            'status' => null,
+            'bought_at' => null,
         ]);
 
         if ($cart->exists()) {
@@ -49,7 +49,7 @@ class CartService implements CartInterface
         $cart = Cart::query()->where([
             'user_id' => $this->user->id,
             'product_id' => $product->id,
-            'status' => null,
+            'bought_at' => null,
         ]);
 
         if ($cart->exists()) {
@@ -157,12 +157,17 @@ class CartService implements CartInterface
         }
 
         $this->user->carts()
-            ->where('status', '=', null)
+            ->where('bought_at', '=', null)
             ->update([
-                'status' => 'bought',
+                'bought_at' => now(),
             ]);
 
         return $this;
+    }
+
+    public function getOrders(): Collection
+    {
+        return $this->user->orders()->get();
     }
 
     private function moneyCentsToEuros(MoneyInterface $money): MoneyInterface

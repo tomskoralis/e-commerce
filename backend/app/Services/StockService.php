@@ -6,9 +6,17 @@ use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\App;
 
 class StockService implements StockInterface
 {
+    private ProductInterface $productModel;
+
+    public function __construct()
+    {
+        $this->productModel = App::make(ProductInterface::class);
+    }
+
     public function addProduct(ProductInterface $product): self
     {
         $product->save();
@@ -30,8 +38,15 @@ class StockService implements StockInterface
 
     public function getProducts(): Builder
     {
-        return Product::query()
+        return $this->productModel::query()
             ->where('available', '>', 0)
+            ->orderByDesc('id');
+    }
+
+    public function getOutOfStock(): Builder
+    {
+        return $this->productModel::query()
+            ->where('available', '=', 0)
             ->orderByDesc('id');
     }
 }

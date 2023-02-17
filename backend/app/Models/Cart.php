@@ -12,6 +12,7 @@ class Cart extends Model
 
     protected $fillable = [
         'count',
+        'bought_at',
     ];
 
     public function user(): BelongsTo

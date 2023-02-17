@@ -31,7 +31,7 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJson([
-            'message' => 'Successfully registered.',
+            'message' => 'Successfully registered as test.',
             'token' => true,
         ]);
 
@@ -61,12 +61,13 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'message' => 'Successfully logged in.',
+            'message' => "Successfully logged in as $user->name.",
             'token' => true,
         ]);
 
         $this->assertDatabaseHas('personal_access_tokens', [
             'name' => 'auth_token',
+            'tokenable_id' => $user->id,
             'created_at' => now()->format('Y-m-d H:i:s'),
         ]);
     }

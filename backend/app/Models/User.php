@@ -48,10 +48,20 @@ class User extends Authenticatable
         return Product::query()
             ->where([
                 'user_id' => $this->id,
-                'status' => null,
+                'bought_at' => null,
             ])
             ->join('carts', 'products.id', '=', 'carts.product_id')
             ->selectRaw('products.*, carts.count');
+    }
+
+    public function orders(): Builder
+    {
+        return Product::query()
+            ->whereNot('bought_at')
+            ->where('user_id', $this->id)
+            ->join('carts', 'products.id', '=', 'carts.product_id')
+            ->selectRaw('products.*, carts.count, carts.bought_at')
+            ->orderByDesc('carts.bought_at');
     }
 
     public function incrementBalance(MoneyInterface $money): self

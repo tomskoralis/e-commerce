@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\NonEloquent\MoneyInterface;
 use App\Models\Product;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class ProductResource extends JsonResource
 {
@@ -26,6 +27,10 @@ class ProductResource extends JsonResource
         $count = $this->count;
         if ($count) {
             $product['count'] = $count;
+        }
+        $boughtAt = $this->bought_at;
+        if ($boughtAt) {
+            $product['bought_at'] = Carbon::make($boughtAt)->format('d/m/Y G:i');
         }
         return $product;
     }

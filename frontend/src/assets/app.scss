@@ -1,0 +1,84 @@
+$breakpoint-sm: 480px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+
+$primary-color: #000;
+$background-color: #fff;
+$secondary-background-color: #1c1f23;
+$border-color: #ddd;
+$link-color: #656565;
+$link-hover-color: #005381;
+$success-color: #027702;
+$error-color: #a20505;
+
+@mixin for-at-least($breakpoint) {
+  @media screen and (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+a {
+  color: $link-color;
+
+  &:hover {
+    color: $link-hover-color;
+  }
+
+  &:active {
+    color: $link-color;
+  }
+
+  &:visited {
+    color: $link-color;
+  }
+}
+
+.page-heading {
+  text-align: center;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.button {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  color: $background-color;
+  background-color: $secondary-background-color;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+  transition: ease-in-out 0.1s;
+
+  &:hover {
+    opacity: 0.6;
+  }
+
+  &:focus {
+    outline: 2px solid $link-hover-color;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+}
+
+.danger-button {
+  @extend .button;
+  background-color: $error-color;
+
+  &:focus {
+    outline: 2px solid $link-color;
+  }
+}
